@@ -1,32 +1,32 @@
-# React + TypeScript + Vite
+# swaranidhi
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Stream your own music library straight from Google Drive. Zero backend — a static PWA hosted on Firebase Hosting, authenticating client-side via Google Identity Services. See `PRD.md` for the full architecture.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm install
+cp .env.example .env
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Fill in `.env` with your OAuth Client ID (see PRD.md section 3.2 for GCP setup steps).
+
+## Develop
+
+```sh
+npm run dev
+```
+
+## Build
+
+```sh
+npm run build
+```
+
+## Deploy
+
+```sh
+firebase deploy --only hosting
+```
+
+Requires the [Firebase CLI](https://firebase.google.com/docs/cli) installed and authenticated (`firebase login`), and `.firebaserc` pointing at your Firebase project.

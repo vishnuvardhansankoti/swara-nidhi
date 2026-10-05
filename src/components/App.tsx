@@ -19,11 +19,15 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [tab, setTab] = useState<'library' | 'folders' | 'queue'>('library')
 
-  // Token requests are never auto-triggered on mount: GIS's requestAccessToken opens a
-  // popup, and Chrome silently drops popups not opened from a direct user gesture (no
-  // error callback fires — the request just hangs). The only entry points are the
-  // explicit "Connect"/"Reconnect" clicks below. See PRD.md section 3.1.
-  //
+  // No token request is ever auto-triggered on mount: confirmed empirically that GIS's
+  // requestAccessToken() always opens a popup internally — even with prompt:'' (silent) —
+  // so it is popup-blocked without a direct user gesture regardless of prompt value. An
+  // unattended attempt here can never succeed; it would only flash a spurious error. The
+  // only entry points are the explicit "Connect"/"Reconnect" clicks below, which now use
+  // `reconnect()` (silent-first, falls back to the consent screen only if that fails) so a
+  // returning user with a still-valid Google session skips the account-chooser/consent UI
+  // entirely — that forced full consent on every click was the actual "asking too often" bug.
+
   // True first-run (no root folders ever configured) is the only case that blocks the
   // whole UI — a returning user sees their cached library/queue instantly (PRD.md 2.3/6.3)
   // even before reconnecting, and only needs to reconnect to actually stream audio.
@@ -31,7 +35,7 @@ export default function App() {
   if (isFirstRun && auth.status !== 'signed-in') {
     return (
       <SignInScreen
-        onSignIn={() => void auth.signIn()}
+        onSignIn={() => void auth.reconnect()}
         isAuthenticating={auth.status === 'authenticating'}
         errorMessage={auth.lastError?.message ?? null}
       />
@@ -45,7 +49,7 @@ export default function App() {
         <div className="flex items-center gap-3">
           {auth.status !== 'signed-in' && (
             <button
-              onClick={() => void auth.signIn()}
+              onClick={() => void auth.reconnect()}
               disabled={auth.status === 'authenticating'}
               className="rounded-full bg-emerald-500 px-3 py-1 text-sm font-medium text-slate-950 disabled:opacity-50"
             >

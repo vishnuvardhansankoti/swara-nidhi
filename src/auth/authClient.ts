@@ -63,6 +63,21 @@ class AuthClient {
     return this.requestToken('')
   }
 
+  /**
+   * Tries silent renewal first, falling back to the full consent popup only if that
+   * fails (no active Google session, grant revoked, etc.). This is the right entry
+   * point for any "reconnect" UI action — calling `signIn()` (consent) directly would
+   * force the full Google account-chooser/consent screen every time, even for a user
+   * who already granted access and just needs their in-memory token refreshed.
+   */
+  async reconnect(): Promise<void> {
+    try {
+      await this.renewSilently()
+    } catch {
+      await this.signIn()
+    }
+  }
+
   private requestToken(prompt: '' | 'consent'): Promise<void> {
     // Coalesce concurrent callers (e.g. two Drive calls 401'ing at once) into one request.
     if (this.pendingRequest) return this.pendingRequest

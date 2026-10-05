@@ -10,6 +10,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // The default injected register script only calls `serviceWorker.register()`
+      // once and never listens for updates — it does NOT reload on a new deploy.
+      // We register manually via `virtual:pwa-register` in main.tsx instead, which
+      // wires up the actual auto-reload-on-activate behavior `autoUpdate` implies.
+      injectRegister: false,
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'swaranidhi',

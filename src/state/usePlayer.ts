@@ -23,6 +23,7 @@ export interface PlayerState {
   error: string | null
   effectiveOrder: string[]
   playFromLibrary: (trackIds: string[], startTrackId: string) => void
+  playShuffled: (trackIds: string[]) => void
   togglePlayPause: () => void
   skipNext: () => void
   skipPrevious: () => void
@@ -129,6 +130,20 @@ export function usePlayer(tracksById: Map<string, IndexedDBTrackRecord>): Player
       const shuffledOrder = sessionRef.current.shuffle ? shuffleOrder(trackIds) : null
       updateSession({ queue, shuffledOrder, currentTrackId: startTrackId, positionSeconds: 0 }, true)
       const track = tracksById.get(startTrackId)
+      if (track) void loadAndPlay(track, 0)
+    },
+    [loadAndPlay, tracksById, updateSession],
+  )
+
+  /** "Shuffle All" entry points (global library, or a single folder's recursive track list) —
+   * forces shuffle on immediately, independent of whatever the current toggle state was. */
+  const playShuffled = useCallback(
+    (trackIds: string[]) => {
+      if (trackIds.length === 0) return
+      const queue = trackIds.map((trackId, queuePosition) => ({ trackId, queuePosition }))
+      const order = shuffleOrder(trackIds)
+      updateSession({ queue, shuffledOrder: order, shuffle: true, currentTrackId: order[0], positionSeconds: 0 }, true)
+      const track = tracksById.get(order[0])
       if (track) void loadAndPlay(track, 0)
     },
     [loadAndPlay, tracksById, updateSession],
@@ -288,6 +303,7 @@ export function usePlayer(tracksById: Map<string, IndexedDBTrackRecord>): Player
     error,
     effectiveOrder,
     playFromLibrary,
+    playShuffled,
     togglePlayPause,
     skipNext,
     skipPrevious,
